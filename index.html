@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Muhammad's Student Portal</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #2980b9;
+            --success: #27ae60;
+            --bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background: var(--bg);
+            color: var(--primary);
+            scroll-behavior: smooth;
+        }
+
+        /* Navigation (Task 4) */
+        nav {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 2rem auto;
+            padding: 20px;
+        }
+
+        section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        /* Input Styling */
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        /* Table Styling (Task 3) */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f2f2f2;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        /* Report Card (Task 5) */
+        .report-card {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .stat {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat span {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #f1c40f;
+        }
+
+        .congrats-text {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 15px;
+            font-weight: bold;
+            color: var(--success);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <a href="#setup">Registration</a>
+        <a href="#academic">Subjects</a>
+        <a href="#report">Results</a>
+    </nav>
+
+    <div class="container">
+        <section id="setup">
+            <h1 id="welcomeHeading">Student Portal Registration</h1>
+
+            <div class="input-group">
+                <label>Student Name:</label>
+                <input type="text" id="userName" placeholder="e.g. Muhammad">
+            </div>
+
+            <div class="input-group">
+                <label>Age:</label>
+                <input type="number" id="userAge" placeholder="e.g. 20">
+            </div>
+
+            <div class="input-group">
+                <label>Select Path:</label>
+                <select id="userPath" onchange="togglePathOptions()">
+                    <option value="">-- Choose Option --</option>
+                    <option value="school">School</option>
+                    <option value="course">Web Dev Course</option>
+                </select>
+            </div>
+
+            <div class="input-group" id="classSelector" style="display:none;">
+                <label>Select Class:</label>
+                <select id="userClass">
+                    <option value="9th">Class 9</option>
+                    <option value="10th">Class 10</option>
+                    <option value="11th">Class 11 (Pre-Eng)</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="initializePortal()">Initialize Portal</button>
+            <div id="introDisplay" style="margin-top:15px; font-style: italic; color: #555;"></div>
+        </section>
+
+        <section id="academic" style="display:none;">
+            <h2 id="pathTitle">Academic Records</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject Name</th>
+                        <th>Obtained Marks (Max: 100)</th>
+                    </tr>
+                </thead>
+                <tbody id="subjectRows">
+                </tbody>
+            </table>
+            <button class="btn btn-success" onclick="processResults()">Calculate Total & Show Report</button>
+        </section>
+
+        <section id="report" style="display:none;">
+            <h2>Final Report Card</h2>
+            <div id="reportDisplay" class="report-card">
+                <div class="stat">Total Marks <span id="outTotal">0</span></div>
+                <div class="stat">Percentage <span id="outPercent">0%</span></div>
+                <div class="stat">Final Grade <span id="outGrade">-</span></div>
+            </div>
+            <div id="onPageMessage" class="congrats-text"></div>
+        </section>
+    </div>
+
+    <script>
+        // Task 1: Initialize variables
+        let studentName = "";
+        let selectedSubjects = [];
+
+        // Function to show/hide the Class dropdown based on path
+        function togglePathOptions() {
+            const path = document.getElementById('userPath').value;
+            const classDiv = document.getElementById('classSelector');
+            if (path === 'school') {
+                classDiv.style.display = 'block';
+            } else {
+                classDiv.style.display = 'none';
+            }
+        }
+
+        // Task 4: Change heading and set up data
+        function initializePortal() {
+            studentName = document.getElementById('userName').value;
+            let age = document.getElementById('userAge').value;
+            let path = document.getElementById('userPath').value;
+            let className = document.getElementById('userClass').value;
+
+            if (studentName === "" || age === "" || path === "") {
+                alert("Please complete the registration fields!");
+                return;
+            }
+
+            let fullPathName = (path === "course") ? "Professional Web Development" : `School Class ${className}`;
+
+            // Task 1: Template String
+            document.getElementById('introDisplay').innerText = `Hello, my name is ${studentName}. I am ${age} years old and learning ${fullPathName}.`;
+
+            // Task 4: Change H1 text 
+            document.getElementById('welcomeHeading').innerText = `Welcome ${studentName}`;
+
+            loadSubjectTable(path);
+            document.getElementById('academic').style.display = 'block';
+        }
+
+        // Task 3: Arrays & Loops 
+        function loadSubjectTable(path) {
+            const rowContainer = document.getElementById('subjectRows');
+            rowContainer.innerHTML = "";
+
+            // Arrays of 7 subjects
+            const schoolSubjects = ["Math", "Physics", "Chemistry", "English", "Urdu", "Islamiat", "Comp Science"];
+            const courseSubjects = ["HTML", "CSS", "JavaScript", "React", "Node.js", "MongoDB", "Express"];
+
+            selectedSubjects = (path === "course") ? courseSubjects : schoolSubjects;
+            document.getElementById('pathTitle').innerText = `${path.toUpperCase()} Subjects`;
+
+            // For Loop to generate rows
+            for (let i = 0; i < selectedSubjects.length; i++) {
+                rowContainer.innerHTML += `<tr>
+                    <td>${selectedSubjects[i]}</td>
+                    <td><input type="number" class="subject-input" min="0" max="100" value=""></td>
+                </tr>`;
+            }
+        }
+
+        // Task 2 & 5: Result Logic 
+        function processResults() {
+            const allInputs = document.querySelectorAll('.subject-input');
+            let totalObtained = 0;
+            const totalPossible = selectedSubjects.length * 100;
+
+            // Sum the marks
+            for (let j = 0; j < allInputs.length; j++) {
+                totalObtained += parseInt(allInputs[j].value) || 0;
+            }
+
+            let percentage = (totalObtained / totalPossible) * 100;
+
+            // Task 2: Grade If/Else Condition
+            let grade;
+            if (percentage >= 80) { grade = "A"; }
+            else if (percentage >= 60) { grade = "B"; }
+            else if (percentage >= 40) { grade = "C"; }
+            else { grade = "Fail"; }
+
+            // Task 5: Status using Template String 
+            let status = (percentage >= 40) ? "passed" : "failed";
+            let finalMessage = `Congratulations ${studentName}, you ${status} with ${percentage.toFixed(2)}% marks!`;
+
+            // Display results on page
+            document.getElementById('report').style.display = 'block';
+            document.getElementById('reportDisplay').style.display = 'grid';
+            document.getElementById('outTotal').innerText = `${totalObtained}/${totalPossible}`;
+            document.getElementById('outPercent').innerText = `${percentage.toFixed(1)}%`;
+            document.getElementById('outGrade').innerText = grade;
+            document.getElementById('onPageMessage').innerText = finalMessage;
+
+            // Alert Message
+            alert(finalMessage);
+        }
+    </script>
+</body>
+
+</html>
